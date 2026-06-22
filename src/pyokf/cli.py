@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import argparse
 import sys
+import webbrowser
 from pathlib import Path
 
 from pyokf.analyzer import analyze_project
 from pyokf.bundle import OKFBundle
 from pyokf.generator import generate_module_concepts
+from pyokf.visualizer import generate_html
 
 
 def _add_common_args(parser: argparse.ArgumentParser) -> None:
@@ -105,6 +107,41 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_view(args: argparse.Namespace) -> int:
+    project_root = Path(args.path).resolve()
+    okf_dir = (project_root / args.output).resolve()
+
+    if not okf_dir.exists():
+        print(
+            f"error: OKF directory not found: {okf_dir}\n"
+            "       Run `okf generate <path>` first.",
+            file=sys.stderr,
+        )
+        return 1
+
+    bundle = OKFBundle(okf_dir).load()
+    if not bundle.concepts:
+        print(
+            f"error: No OKF concepts found in {okf_dir}\n"
+            "       Run `okf generate <path>` first.",
+            file=sys.stderr,
+        )
+        return 1
+
+    html = generate_html(bundle.concepts)
+    out = okf_dir / "index.html"
+    out.write_text(html, encoding="utf-8")
+
+    rel = out.relative_to(project_root)
+    print(f"  viewer: {rel}")
+    print(f"  open:   file://{out}")
+
+    if getattr(args, "open", False):
+        webbrowser.open(out.as_uri())
+
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="okf",
@@ -132,6 +169,15 @@ def build_parser() -> argparse.ArgumentParser:
     val_parser = subparsers.add_parser("validate", help="Validate OKF files against the spec")
     _add_common_args(val_parser)
     val_parser.set_defaults(func=cmd_validate)
+
+    view_parser = subparsers.add_parser("view", help="Generate a self-contained HTML viewer")
+    _add_common_args(view_parser)
+    view_parser.add_argument(
+        "--open",
+        action="store_true",
+        help="Open the viewer in the default browser after generating",
+    )
+    view_parser.set_defaults(func=cmd_view)
 
     return parser
 

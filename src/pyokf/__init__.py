@@ -15,6 +15,7 @@ from pyokf.models import (
 from pyokf.analyzer import analyze_file, analyze_project
 from pyokf.generator import generate_concept, generate_module_concepts
 from pyokf.bundle import OKFBundle
+from pyokf.visualizer import generate_html
 
 __all__ = [
     "ConceptType",
@@ -30,4 +31,5 @@ __all__ = [
     "generate_concept",
     "generate_module_concepts",
     "OKFBundle",
+    "generate_html",
 ]
