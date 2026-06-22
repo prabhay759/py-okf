@@ -147,7 +147,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="okf",
         description="py-okf: Generate and manage Open Knowledge Format (OKF) files for Python projects.",
     )
-    parser.add_argument("--version", action="version", version="%(prog)s 0.1.0")
+    parser.add_argument("--version", action="version", version="%(prog)s 0.2.0")
 
     subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
     subparsers.required = True
